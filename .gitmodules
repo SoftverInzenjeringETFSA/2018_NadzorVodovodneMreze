@@ -1,6 +1,0 @@
-[submodule "si2018_vik_frontend"]
-	path = si2018_vik_frontend
-	url = https://github.com/adnanel/si2018_vik_frontend
-[submodule "si2018_vik_backend"]
-	path = si2018_vik_backend
-	url = https://github.com/adnanel/si2018_vik_backend
