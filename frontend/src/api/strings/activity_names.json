@@ -1,0 +1,12 @@
+{
+        "pipe_add": "Dodavanje cijevi",
+        "section_disable": "Isključivanje dijela vodovoda",
+        "section_enable": "Uključivanje dijela vodovoda",
+        "pipe_remove": "Brisanje cijevi",
+        "construction_add": "Dodavanje radova",
+        "construction_remove": "Brisanje radova",
+        "mstation_add": "Dodavanje mjerne stanice",
+        "mstation_remove": "Brisanje mjerne stanice",
+        "failure_add": "Dodavanje kvara",
+        "failure_remove": "Brisanje kvara"
+}
