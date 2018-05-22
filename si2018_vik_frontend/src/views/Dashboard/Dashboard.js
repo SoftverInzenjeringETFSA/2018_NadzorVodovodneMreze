@@ -26,7 +26,7 @@ import {
 import Widget02 from '../../views/Widgets/Widget02'
 import { CustomTooltips } from '@coreui/coreui-plugin-chartjs-custom-tooltips';
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
-import { Polyline } from "react-google-maps";
+import { Polyline, Circle } from "react-google-maps";
 import PipeApi from "../../api/PipeApi";
 import { Pipe } from "../../api/model/Pipe";
 import VodostajApi from "../../api/VodostajApi";
@@ -55,6 +55,7 @@ const MainMapComponent = withScriptjs(withGoogleMap((props) =>
 
         {props.pipes}
         {props.vodostaji}
+        {props.circle}
     </GoogleMap>
 ));
 
@@ -98,11 +99,20 @@ class Dashboard extends Component {
     geodesic: true
     }
 
-  pipes = [];
-  vodostaji = [];
+    circleOptions={	
+        strokeColor: '#add8e6',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#add8e6',
+        fillOpacity: 0.65,
+    }
 
+    pipes = [];
+    vodostaji = [];
+    krugovi = [];
+    citymap=[];
 
-  constructor(props) {
+    constructor(props) {
     super(props);
 
   
@@ -117,7 +127,27 @@ class Dashboard extends Component {
       radioSelected: 2,
     };
 
+    this.citymap = {
+           nedzarici: {
+             center: {lat: 43.8361844, lng: 18.33682090000002},
+             population: 27
+           },
+           halilovici: {
+             center: {lat: 43.8482425, lng: 18.33485589999998},
+             population: 20
+           },
+           alipasinopolje: {
+             center: {lat: 43.8436494, lng: 18.348418000000038},
+             population: 25
+           },
+           otoka: {
+             center: {lat: 43.84850350000001, lng: 18.36161029999994},
+             population: 60
+           }
+         };
+
     this.crtajCijevi();
+    this.crtajKrugove();
 
     VodostajApi.GetVodostaji().subscribe(
         vals => {
@@ -184,6 +214,24 @@ class Dashboard extends Component {
         }
     );
   }
+
+  crtajKrugove(){
+    	
+       for (var city in this.citymap) {
+ 
+           console.log(this.citymap[city]);
+         this.krugovi.push(
+             <Circle
+            key={city}
+            center={{lat: this.citymap[city].center.lat,lng: this.citymap[city].center.lng}}
+           options={this.circleOptions}
+           map={this.map}
+           radius= {Math.sqrt(this.citymap[city].population) * 100}
+           icon={this.citymap[city].icon}
+           />);
+         }	
+        
+     }
 
   toggle() {
     this.setState({
@@ -266,6 +314,8 @@ class Dashboard extends Component {
 
                                         pipes={this.pipes}
                                         vodostaji={this.vodostaji}
+                                        circle={this.krugovi}
+                                        
                                         loadingElement={<div style={{ height: `100%` }} />}
                                         containerElement={<div style={{ height: `400px` }} />}
                                         mapElement={<div style={{ height: `100%` }} />}
