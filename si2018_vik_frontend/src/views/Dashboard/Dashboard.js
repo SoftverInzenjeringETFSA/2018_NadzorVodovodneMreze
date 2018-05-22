@@ -29,10 +29,19 @@ import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-map
 import { Polyline } from "react-google-maps";
 import PipeApi from "../../api/PipeApi";
 import { Pipe } from "../../api/model/Pipe";
+import VodostajApi from "../../api/VodostajApi";
+import { Vodostaj } from "../../api/model/Vodostaj";
 
 const vikMapStyle = require("./vikMapStyle.json");
 
+var iconURL = require("../../rezervoar.jpg");
+//var markers = [];
+const pathCoordinates=[ 
+    {lat:43.8405067, lng:18.3337751}, 
+    {lat:43.8409089,lng: 18.3337829}, 
+    
 
+  ]
 
 const MainMapComponent = withScriptjs(withGoogleMap((props) =>
     <GoogleMap
@@ -41,20 +50,35 @@ const MainMapComponent = withScriptjs(withGoogleMap((props) =>
         defaultOptions={{ styles: vikMapStyle }}
         disableDefaultUI={true}
     >
-        {props.isMarkerShown && <Marker position={{ lat: 43.8407031, lng: 18.3337828 }} />}
+        {props.isMarkerShown && <Marker position={{ lat: 43.8407031, lng: 18.3337828}} icon={{url: iconURL}} />}
+        {/*props.isMarkerShown && <Marker position={{ lat: 43.8507051, lng: 18.3337878}} icon={{url: iconURL}} />*/}
 
         {props.pipes}
+        {props.vodostaji}
     </GoogleMap>
 ));
 
 class Dashboard extends Component {
   selectedPipe = null;
+  selectedVodostaj = null;
 
   pipeClick(pipe) {
-      this.selectedPipe = this.pipes[this.pipes.findIndex((val, i) => { return val.key === pipe; })];
+      console.log(pipe);
+      this.selectedPipe = this.pipes[this.pipes.findIndex((val, i) => { console.log(val); return val.key === pipe; })];
 
       this.forceUpdate();
   }
+  vodostajClick(vodostaj) {
+      console.log(vodostaj);
+    this.selectedVodostaj = this.vodostaji[this.vodostaji.findIndex((val, i) => { return val.key === vodostaj; })];
+    console.log(this.selectedVodostaj);
+    this.forceUpdate();
+}
+
+
+
+
+
 
     pipeStyleOptions = {
     strokeColor: '#00eeff',
@@ -75,28 +99,56 @@ class Dashboard extends Component {
     }
 
   pipes = [];
+  vodostaji = [];
 
 
   constructor(props) {
     super(props);
 
+  
     this.toggle = this.toggle.bind(this);
     this.onRadioBtnClick = this.onRadioBtnClick.bind(this);
     this.oznaciRad = this.oznaciRad.bind(this);
-    this.crtajCijevi = this.crtajCijevi.bind(this);
+    this.dodavanje = this.dodavanje.bind(this);
 
     this.state = {
       dropdownOpen: false,
       radioSelected: 2,
     };
+    VodostajApi.GetVodostaji().subscribe(
+        vals => {
 
-   this.crtajCijevi();
-  }
+           // console.log(vals);
+            this.vodostaji = [];
+            for ( let vodostaj of vals ) {
+                var vodostajOptions = null;
+                vodostajOptions = this.workInProgressPipeStyleOptions;
 
-  crtajCijevi(){
+                this.vodostaji.push(
+                    /*<Marker
+                    key={vodostaj._id}
+                    vodostajObj={vodostaj}
+                    path={pathCoordinates}
+                    options={vodostajOptions}
+                    onClick={(event) => this.vodostajClick(vodostaj._id)}
+                    />);*/
+                <Polyline
+                    key={vodostaj._id}
+                    vodostajObj={vodostaj}
+                    path={pathCoordinates}
+                    options={vodostajOptions}
+                    onClick={(event) => this.vodostajClick(vodostaj._id)}
+                />);
+            }
+            console.log(this.vodostaji);
+            
+            this.forceUpdate();
+        }
+    );
+
     PipeApi.GetPipes().subscribe(
         vals => {
-            console.log(vals);
+           // console.log(vals);
             this.pipes = [];
             for ( let pipe of vals ) {
                 var pipeOptions = null;
@@ -119,7 +171,7 @@ class Dashboard extends Component {
                     onClick={(event) => this.pipeClick(pipe.name)}
                 />);
             }
-            
+            console.log(this.pipes);
             this.forceUpdate();
         }
     );
@@ -137,14 +189,42 @@ class Dashboard extends Component {
     });
   }
   oznaciRad(e){
-
-    PipeApi.PatchPipeById(this.selectedPipe.props.pipeObj._id,this.selectedPipe.props.pipeObj.status).subscribe(
+      console.log(this.selectedPipe);
+    PipeApi.PatchPipeById(this.selectedPipe.props.pipeObj._id).subscribe(
         vals => {
             console.log(vals);
             console.log(this.selectedPipe);
-            this.crtajCijevi();
+            
         });
   }
+
+  dodavanje(i){
+     // var id = this.selectedVodostaj.props.vodostajObj._id;
+      var value = document.getElementById("vodostajValue").value;
+      var created_by = this.selectedVodostaj.props.vodostajObj.created_by;
+      var lat = this.selectedVodostaj.props.vodostajObj.lat;
+      var lng = this.selectedVodostaj.props.vodostajObj.lng;
+     // console.log(JSON.stringify (this.selectedVodostaj) +" kak "+ id +" kaaako");
+    var ajax = new XMLHttpRequest();
+     ajax.onreadystatechange = function() {// Anonimna funkcija
+           if (ajax.readyState == 4 && ajax.status == 200)
+               console.log("Uspjesno dodavanje vodostaja");
+               
+           else if (ajax.readyState == 4)
+           console.log(ajax.status,ajax.responseText);
+        };
+       ajax.open("POST","http://localhost:8080/api/vodostaji",true);
+       ajax.setRequestHeader("Content-Type", "application/json");
+       ajax.send(JSON.stringify({
+          value,
+          created_by,
+          lat,
+          lng
+       })
+
+       );
+  }
+  
 
   render() {
     return (
@@ -172,10 +252,11 @@ class Dashboard extends Component {
                       Mapa
                   </CardHeader>
                   <CardBody>
-                      <MainMapComponent isMarkerShown={false}
+                      <MainMapComponent isMarkerShown={true}
                                         googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFMi8xu6sTPt579TzweGFVX4Dlu2hE4n8&v=3.exp&libraries=geometry,drawing,places"
 
                                         pipes={this.pipes}
+                                        vodostaji={this.vodostaji}
                                         loadingElement={<div style={{ height: `100%` }} />}
                                         containerElement={<div style={{ height: `400px` }} />}
                                         mapElement={<div style={{ height: `100%` }} />}
@@ -185,6 +266,47 @@ class Dashboard extends Component {
               </Card>
             </Col>
           </Row>
+          {this.selectedVodostaj !== null &&
+          <Row>
+          <Col md={12}>
+
+              <Card>
+                  <CardHeader>
+                      Vodostaj - {this.selectedVodostaj.props.vodostajObj._id}
+                  </CardHeader>
+                  <CardBody>
+                      <FormGroup>
+                          <Label htmlFor="vodostajVisina">Visina vodostaja</Label>
+                          <Input type="number" id="vodostajValue" />
+                      </FormGroup>
+
+
+                      <Label htmlFor="from_pos">Lokacija vodostaja</Label>
+                      <FormGroup id="from_pos" row className="my-0">
+                          <Col xs="6">
+                              <FormGroup>
+                                  <Label htmlFor="from_lat">Latitude</Label>
+                                  <Input type="text" id="from_lat" value={this.selectedVodostaj.props.vodostajObj.lat}/>
+                              </FormGroup>
+                          </Col>
+                          <Col xs="6">
+                              <FormGroup>
+                                  <Label htmlFor="from_lng">Longitude</Label>
+                                  <Input type="text" id="from_lng" value={this.selectedVodostaj.props.vodostajObj.lng}/>
+                              </FormGroup>
+                          </Col>
+                      </FormGroup>
+
+
+                      <FormGroup id="buttoni" row className="my-0">
+                      <Col xs ="4">
+                          <Button onClick={this.dodavanje}>Dodaj podatke o vodostaju</Button>
+                      </Col>
+                  </FormGroup>
+                  </CardBody>
+              </Card>
+          </Col>
+          </Row>}
 
           {this.selectedPipe !== null && // kad se klikne na cijev
               <Row>

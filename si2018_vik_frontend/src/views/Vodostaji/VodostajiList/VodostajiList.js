@@ -1,8 +1,20 @@
 import React, { Component } from 'react';
 import { Badge, Card, CardBody, CardHeader, Col, Pagination, PaginationItem, PaginationLink, Row, Table } from 'reactstrap';
-//import VodostajiApi
+import VodostajApi from "../../../api/VodostajApi";
+
 
 class VodostajiList extends Component {
+    constructor(props){
+        super(props);
+        this.state={vals: []};
+
+        VodostajApi.GetVodostaji().subscribe(
+            vals => {
+                this.setState({vals:vals});
+            }
+        );
+}
+
     render() {
         return <div className="animated fadeIn">
             <Row>
@@ -16,17 +28,20 @@ class VodostajiList extends Component {
                                 <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Šifra</th>
-                                    <th>Naziv vodostaja</th>
                                     <th>Visina vodostaja</th>
                                     <th>Vrijeme unosa</th>
-                                    <th>Lokacija</th>
-                                    <th>Status</th>
+                                    <th>Latitude</th>
+                                    <th>Longitude</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-
-
+                                    {this.state.vals.map((item)=><tr>
+                                        <td>{item._id}</td>
+                                        <td>{item.value}</td>
+                                        <td>{item.createdAt}</td>
+                                        <td>{item.lat}</td>
+                                        <td>{item.lng}</td>
+                                    </tr>)}
                                 </tbody>
                             </Table>
                             <nav>
