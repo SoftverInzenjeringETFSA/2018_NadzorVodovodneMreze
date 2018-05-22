@@ -31,3 +31,5 @@ class VodostajApi {
         });
     }
 }
+
+export default VodostajApi;

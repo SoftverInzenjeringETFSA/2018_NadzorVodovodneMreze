@@ -18,21 +18,12 @@ import type {ActivityReportEntry} from "../../../api/model/ActivityReportEntry";
 
 
 class ActivityReport extends Component {
-    items: ActivityReportEntry[] = [];
+    items: ActivityReportEntry = [];
     itemsPerPage = 5;
-    currentPage = 1;
-    total = 0;
 
     fetchList() {
-        ReportApi.GenerateActivityReport(this.currentPage, this.itemsPerPage, null).subscribe( items => {
-            this.total = items.total;
-            this.items = items.data;
-            if ( this.items.length === 0 && this.currentPage > 1 ) {
-                this.currentPage --;
-                this.fetchList();
-                return;
-            }
-
+        ReportApi.GenerateActivityReport(1, this.itemsPerPage, null).subscribe( items => {
+            this.items = items;
             this.forceUpdate();
         } );
     }
@@ -53,48 +44,15 @@ class ActivityReport extends Component {
         this.fetchList();
     }
 
-    setPage(n) {
-        this.currentPage = n;
-        this.fetchList();
-    }
-
-    makePagination() {
-        var pagination = [];
-
-        for ( var i = Math.max(-2 + this.currentPage, 1); i <= Math.min(Math.ceil(this.total / this.itemsPerPage), Math.max(-2 + this.currentPage, 1) + 5); ++ i ) {
-            var paginator = function(instance, i) {
-                return function() {
-                    instance.setPage(i);
-                }
-            };
-
-            pagination.push(
-                <PaginationItem key={i}>
-                    <PaginationLink onClick={paginator(this, i)} tag="button">{i}</PaginationLink>
-                </PaginationItem>
-            );
-
-            if ( i === this.currentPage ) {
-                pagination[pagination.length - 1] = <PaginationItem active key={i}>
-                    <PaginationLink tag="button">{i}</PaginationLink>
-                </PaginationItem>
-            }
-        }
-
-        return <Pagination>
-            {pagination}
-        </Pagination>;
-    }
-
     render() {
         const items: ActivityReportEntry[] = [];
-        let k = (this.itemsPerPage * (this.currentPage - 1)) + 1;
+        let k = 1;
         for ( const i of this.items ) {
             items.push(<tr key={k}>
                 <td>{k}</td>
                 <td>{ReportApi.LocalizedActivityLabel(i.activity)}</td>
                 <td>{i.user_id}</td>
-                <td>{new Date(i.timestamp).toLocaleString()}</td>
+                <td>{i.timestamp}</td>
             </tr>);
             ++k;
         }
@@ -103,12 +61,12 @@ class ActivityReport extends Component {
                 <Col>
                     <Card>
                         <CardHeader>
-                            <i className="fa fa-align-justify"></i> Izvještaj današnjih aktivnosti
+                            <i className="fa fa-align-justify"></i> Combined All Table
                         </CardHeader>
                         <CardBody>
                             <div className="pr-2 pt-2 pb-2">
                                 <span className="pr-2 pt-2 pb-2">
-                                    Ukupno {this.total} unosa, broj prikazanih unosa po stranici:
+                                    Broj unosa po stranici:
                                 </span>
                                 <ButtonDropdown className="mr-1" isOpen={this.state.itemsPerPageDropdownOpen} toggle={() => { this.setState( { itemsPerPageDropdownOpen: !this.state.itemsPerPageDropdownOpen }); } }>
                                     <DropdownToggle caret color="secondary">
@@ -140,7 +98,16 @@ class ActivityReport extends Component {
                                 </tbody>
                             </Table>
                             <nav>
-                                {this.makePagination()}
+                                <Pagination>
+                                    <PaginationItem><PaginationLink previous tag="button">Prev</PaginationLink></PaginationItem>
+                                    <PaginationItem active>
+                                        <PaginationLink tag="button">1</PaginationLink>
+                                    </PaginationItem>
+                                    <PaginationItem><PaginationLink tag="button">2</PaginationLink></PaginationItem>
+                                    <PaginationItem><PaginationLink tag="button">3</PaginationLink></PaginationItem>
+                                    <PaginationItem><PaginationLink tag="button">4</PaginationLink></PaginationItem>
+                                    <PaginationItem><PaginationLink next tag="button">Next</PaginationLink></PaginationItem>
+                                </Pagination>
                             </nav>
                         </CardBody>
                     </Card>
