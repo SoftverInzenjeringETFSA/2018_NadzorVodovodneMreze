@@ -56,6 +56,7 @@ const MainMapComponent = withScriptjs(withGoogleMap((props) =>
         {props.pipes}
         {props.vodostaji}
         {props.circle}
+        {props.ikona}
     </GoogleMap>
 ));
 
@@ -111,6 +112,8 @@ class Dashboard extends Component {
     vodostaji = [];
     krugovi = [];
     citymap=[];
+    marker=[];
+  ikone=[];
 
     constructor(props) {
     super(props);
@@ -145,6 +148,24 @@ class Dashboard extends Component {
              population: 60
            }
          };
+
+         this.marker = {
+            nedzarici: {
+              center: {lat: 43.8361844, lng: 18.33682090000002}
+             
+            },
+            halilovici: {
+              center: {lat: 43.8482425, lng: 18.33485589999998}
+              
+            },
+            alipasinopolje: {
+              center: {lat: 43.8436494, lng: 18.348418000000038}
+              
+            },
+            otoka: {
+              center: {lat: 43.84850350000001, lng: 18.36161029999994}
+              }
+          };
 
     this.crtajCijevi();
     this.crtajKrugove();
@@ -230,6 +251,24 @@ class Dashboard extends Component {
            icon={this.citymap[city].icon}
            />);
          }	
+         console.log(this.krugovi);
+
+      for (var markeri in this.marker) {
+        // Add the circle for this city to the map.
+        console.log(this.marker[markeri]);
+      this.ikone.push(
+          <Marker
+         key={markeri}
+         position={{lat: this.marker[markeri].center.lat,lng: this.marker[markeri].center.lng}}
+         options={{ icon: { url: 'https://scontent-waw1-1.xx.fbcdn.net/v/t1.15752-9/33216287_1657290641017054_7396686277946376192_n.png?_nc_cat=0&oh=189661427d96a59ab4350f786bb20be8&oe=5B7C2AB6', scale:3 }}}
+        
+        
+        
+        />);
+        console.log(this.ikone);
+         
+
+      }
         
      }
 
@@ -315,7 +354,7 @@ class Dashboard extends Component {
                                         pipes={this.pipes}
                                         vodostaji={this.vodostaji}
                                         circle={this.krugovi}
-                                        
+                                        ikona={this.ikone}
                                         loadingElement={<div style={{ height: `100%` }} />}
                                         containerElement={<div style={{ height: `400px` }} />}
                                         mapElement={<div style={{ height: `100%` }} />}
@@ -421,9 +460,7 @@ class Dashboard extends Component {
                             <Col xs ="4">
                                 <Button onClick={this.oznaciRad}>Označi rad</Button>
                             </Col>
-                            <Col xs ="4">
-                                <Button>1</Button>
-                            </Col>
+                            
                         </FormGroup>
                         </CardBody>
                     </Card>
