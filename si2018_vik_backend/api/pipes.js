@@ -100,10 +100,16 @@ router.delete('/pipes/:id', function(req,res,next){
 //update pipe
 router.patch('/pipes/:id', function(req,res,next){
     console.log(req);
-    Pipe.findByIdAndUpdate({_id: req.params.id},{status:"workInProgress"}).then(function(pipe){
-        res.send(pipe);
-    });
-});
+    var status1 = null;
+        if(req.query.status==="workInProgress")
+            status1="good";
+        else
+            status1="workInProgress"
+        Pipe.update({_id: req.params.id},{status:status1}).then(function(pipe){
+             res.send(pipe);
+         });
+    
+     });
 
 //pomocne
 router.post('/section', function(req,res,next){

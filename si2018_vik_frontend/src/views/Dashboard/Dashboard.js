@@ -110,11 +110,15 @@ class Dashboard extends Component {
     this.onRadioBtnClick = this.onRadioBtnClick.bind(this);
     this.oznaciRad = this.oznaciRad.bind(this);
     this.dodavanje = this.dodavanje.bind(this);
+    this.crtajCijevi = this.crtajCijevi.bind(this);
 
     this.state = {
       dropdownOpen: false,
       radioSelected: 2,
     };
+
+    this.crtajCijevi();
+
     VodostajApi.GetVodostaji().subscribe(
         vals => {
 
@@ -146,6 +150,10 @@ class Dashboard extends Component {
         }
     );
 
+   
+  }
+
+  crtajCijevi(){
     PipeApi.GetPipes().subscribe(
         vals => {
            // console.log(vals);
@@ -189,13 +197,14 @@ class Dashboard extends Component {
     });
   }
   oznaciRad(e){
-      console.log(this.selectedPipe);
-    PipeApi.PatchPipeById(this.selectedPipe.props.pipeObj._id).subscribe(
+    PipeApi.PatchPipeById(this.selectedPipe.props.pipeObj._id,this.selectedPipe.props.pipeObj.status).subscribe(
+
         vals => {
             console.log(vals);
-            console.log(this.selectedPipe);
-            
+            console.log("ovdje");
+            this.crtajCijevi();
         });
+   
   }
 
   dodavanje(i){
