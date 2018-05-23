@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -17,7 +18,19 @@ const SectionSchema = new Schema({
     active: {
         type: Boolean,
         default: true
-    }
+    },
+    population: {
+        type: Number,
+        required: [true]
+    },
+    lat:{
+        type: Number,
+        required: [true]
+    },
+    lng:{
+        type: Number,
+        required: [true]
+    }  
 }, 
 {timestamps: true}
 );

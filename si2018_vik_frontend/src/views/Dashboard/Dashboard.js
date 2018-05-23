@@ -31,6 +31,8 @@ import PipeApi from "../../api/PipeApi";
 import { Pipe } from "../../api/model/Pipe";
 import VodostajApi from "../../api/VodostajApi";
 import { Vodostaj } from "../../api/model/Vodostaj";
+import SectionApi from '../../api/SectiionApi';
+import SectiionApi from '../../api/SectiionApi';
 
 const vikMapStyle = require("./vikMapStyle.json");
 
@@ -63,10 +65,11 @@ const MainMapComponent = withScriptjs(withGoogleMap((props) =>
 class Dashboard extends Component {
   selectedPipe = null;
   selectedVodostaj = null;
+  selectedSection = null;
 
   pipeClick(pipe) {
-      console.log(pipe);
-      this.selectedPipe = this.pipes[this.pipes.findIndex((val, i) => { console.log(val); return val.key === pipe; })];
+    
+      this.selectedPipe = this.pipes[this.pipes.findIndex((val, i) => {  return val.key === pipe; })];
 
       this.forceUpdate();
   }
@@ -76,11 +79,24 @@ class Dashboard extends Component {
     console.log(this.selectedVodostaj);
     this.forceUpdate();
 }
+  sectionClick(section) {
+    console.log("TUU");
+    this.selectedSection = this.krugovi[this.krugovi.findIndex((val, i) => {  return val.key === section; })];
+    console.log(this.selectedSection);
+    var active = null;
+      if(this.selectedSection.props.options.fillColor === "#add8e6")
+        active = true;
+      else
+        active = false;
 
-
-
-
-
+      SectiionApi.PatchSectionById(section,active).subscribe(
+          vals => {
+              console.log("opet crtam");
+            this.crtajKrugove();
+          }
+      );
+    
+}
 
     pipeStyleOptions = {
     strokeColor: '#00eeff',
@@ -105,6 +121,14 @@ class Dashboard extends Component {
         strokeOpacity: 0.8,
         strokeWeight: 2,
         fillColor: '#add8e6',
+        fillOpacity: 0.65,
+    }
+
+    notActiveCircleOptions={	
+        strokeColor: '#888888',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#888888',
         fillOpacity: 0.65,
     }
 
@@ -166,9 +190,9 @@ class Dashboard extends Component {
               center: {lat: 43.84850350000001, lng: 18.36161029999994}
               }
           };
-
+          this.crtajKrugove();
     this.crtajCijevi();
-    this.crtajKrugove();
+    
 
     VodostajApi.GetVodostaji().subscribe(
         vals => {
@@ -230,45 +254,49 @@ class Dashboard extends Component {
                     onClick={(event) => this.pipeClick(pipe.name)}
                 />);
             }
-            console.log(this.pipes);
             this.forceUpdate();
         }
     );
   }
 
   crtajKrugove(){
-    	
-       for (var city in this.citymap) {
- 
-           console.log(this.citymap[city]);
-         this.krugovi.push(
-             <Circle
-            key={city}
-            center={{lat: this.citymap[city].center.lat,lng: this.citymap[city].center.lng}}
-           options={this.circleOptions}
-           map={this.map}
-           radius= {Math.sqrt(this.citymap[city].population) * 100}
-           icon={this.citymap[city].icon}
-           />);
-         }	
-         console.log(this.krugovi);
-
-      for (var markeri in this.marker) {
-        // Add the circle for this city to the map.
-        console.log(this.marker[markeri]);
-      this.ikone.push(
-          <Marker
-         key={markeri}
-         position={{lat: this.marker[markeri].center.lat,lng: this.marker[markeri].center.lng}}
-         options={{ icon: { url: 'https://scontent-waw1-1.xx.fbcdn.net/v/t1.15752-9/33216287_1657290641017054_7396686277946376192_n.png?_nc_cat=0&oh=189661427d96a59ab4350f786bb20be8&oe=5B7C2AB6', scale:3 }}}
-        
-        
-        
-        />);
-        console.log(this.ikone);
+    	SectiionApi.GetSections().subscribe(
+            vals => {
+                var circleoptions = null;
+                 this.krugovi = [];
+                console.log(vals);
+                 for ( let city of vals ) {
+                    if(city.active === true)
+                        circleoptions=this.circleOptions;
+                    else
+                        circleoptions=this.notActiveCircleOptions;
+                  this.krugovi.push(
+                      <Circle
+                    key={city._id}
+                    center={{lat: city.lat,lng: city.lng}}
+                    options={circleoptions}
+                    radius= {Math.sqrt(city.population) * 100}
+                    />);
+                    
+                    this.ikone.push(
+                        <Marker
+                       key={city._id}
+                       position={{lat: city.lat,lng: city.lng}}
+                       options={{ icon: { url: 'https://scontent-waw1-1.xx.fbcdn.net/v/t1.15752-9/33216287_1657290641017054_7396686277946376192_n.png?_nc_cat=0&oh=189661427d96a59ab4350f786bb20be8&oe=5B7C2AB6', scale:3 }}}
+                       onClick={(event) => this.sectionClick(city._id)}
+                      />); 
+                }
+                console.log(this.krugovi);
+                
+     
+     
+      
+            }
+        );
+       
+        	
          
 
-      }
         
      }
 
@@ -287,11 +315,24 @@ class Dashboard extends Component {
     PipeApi.PatchPipeById(this.selectedPipe.props.pipeObj._id,this.selectedPipe.props.pipeObj.status).subscribe(
 
         vals => {
-            console.log(vals);
-            console.log("ovdje");
-            this.crtajCijevi();
+          this.crtajCijevi();
         });
    
+  }
+
+  iskljuciSection(id){
+      var active = null;
+      if(this.selectedSection.props.options.fillColor === "#add8e6")
+        active = true;
+      else
+        active = false;
+
+      SectiionApi.PatchSectionById(id,active).subscribe(
+          vals => {
+              console.log("opet crtam");
+            this.crtajKrugove();
+          }
+      );
   }
 
   dodavanje(i){
