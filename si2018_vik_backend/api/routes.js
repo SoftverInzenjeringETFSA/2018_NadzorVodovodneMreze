@@ -31,7 +31,7 @@ module.exports = {
     registerRoutes: function registerRoutes(express) {
         //express.get('/pipes', makeListConsumer(__dirname + '/repo/pipes.json'));
 
-        express.get('/vodostaji', makeListConsumer(__dirname + '/repo/vodostaji.json'));
+       // express.get('/vodostaji', makeListConsumer(__dirname + '/repo/vodostaji.json'));
         // reporting
         express.get('/api/report', function(req, res) {
             let apiFilter = null;

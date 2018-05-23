@@ -13,6 +13,14 @@ const WaterLevelSchema = new Schema({
     deleted: {
         type:Boolean,
         default: false
+    },
+    lat: {
+        type: Number,
+        required: [true]
+    },
+    lng: {
+        type: Number,
+        required: [true]
     }
 }, 
 {timestamps: true}

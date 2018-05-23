@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
-
 const express = require('express');
 const router = express.Router();
-const Section = require('../models/section');
 const Pipe = require('../models/pipe');
 const Status = require('../models/pipe_status');
 const PipeDetail = require('../models/pipe_details');
+const Section = require('../models/section');
 
 //get list of pipes
 router.get('/pipes', function(req,res,next){
@@ -51,7 +50,6 @@ router.post('/pipes', function(req,res,next){
                         req.body.pipe_detail_id = new_pipe_detail._id;
                         delete  req.body["pipe_detail"];
                         
-                     console.log(req.body);
                      Pipe.create(req.body).then(function(pipe){
                         res.send(pipe);
                     });
@@ -99,24 +97,18 @@ router.delete('/pipes/:id', function(req,res,next){
 
 //update pipe
 router.patch('/pipes/:id', function(req,res,next){
-    console.log(req);
-    Pipe.findByIdAndUpdate({_id: req.params.id},{status:"workInProgress"}).then(function(pipe){
-        res.send(pipe);
-    });
-});
+    var status1 = null;
+        if(req.query.status==="workInProgress")
+            status1="good";
+        else
+            status1="workInProgress"
+        Pipe.update({_id: req.params.id},{status:status1}).then(function(pipe){
+             res.send(pipe);
+         });
+    
+     });
 
 //pomocne
-router.post('/section', function(req,res,next){
-Section.create(req.body).then(function(section){
-    res.send(section);
-});
-
-});
-router.get('/section', function(req,res,next){
-    Section.find({}).then(function(section){
-        res.send(section);
-    });
-});
 
 router.post('/status', function(req,res,next){
     Status.create(req.body).then(function(status){
@@ -135,4 +127,38 @@ router.get('/pipe_details/:_id',function(res,req,next){
     })  
 })
 
+//add sections
+router.post('/section', function(req,res,next){
+    Section.create(req.body).then(function(section){
+        res.send(section);
+    });
+    
+    });
+
+//get all sections
+router.get('/section', function(req,res,next){
+    Section.find({}).then(function(section){
+        res.send(section);
+    });
+});
+
+//update section
+router.patch('/section/:id', function(req,res,next){
+    console.log("active: "+req.query.active);
+    var status1 = null;
+        if(req.query.active==="true"){
+            status1=false;
+            console.log("true")
+        }
+            
+        else{
+            status1=true;
+            console.log("false")
+        }
+            
+        Section.update({_id: req.params.id},{active:status1}).then(function(pipe){
+             res.send(pipe);
+         });
+    
+     });
 module.exports = router;
