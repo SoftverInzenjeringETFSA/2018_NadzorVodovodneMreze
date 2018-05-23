@@ -52,7 +52,7 @@ const MainMapComponent = withScriptjs(withGoogleMap((props) =>
         defaultOptions={{ styles: vikMapStyle }}
         disableDefaultUI={true}
     >
-        {props.isMarkerShown && <Marker position={{ lat: 43.8407031, lng: 18.3337828}} icon={{url: iconURL}} />}
+        {/*props.isMarkerShown && <Marker position={{ lat: 43.8407031, lng: 18.3337828}} icon={{url: iconURL}} />*/}
         {/*props.isMarkerShown && <Marker position={{ lat: 43.8507051, lng: 18.3337878}} icon={{url: iconURL}} />*/}
 
         {props.pipes}
@@ -192,8 +192,15 @@ class Dashboard extends Component {
           };
           this.crtajKrugove();
     this.crtajCijevi();
+    this.crtajRezervoare();
     
 
+
+
+   
+  }
+
+  crtajRezervoare(){
     VodostajApi.GetVodostaji().subscribe(
         vals => {
 
@@ -202,36 +209,36 @@ class Dashboard extends Component {
             for ( let vodostaj of vals ) {
                 var vodostajOptions = null;
                 vodostajOptions = this.workInProgressPipeStyleOptions;
+                //this.vodostaji.push(vodostaj);
 
                 this.vodostaji.push(
-                    /*<Marker
+                    <Marker
+                    key={vodostaj._id}
+                    vodostajObj={vodostaj}
+                   // path={pathCoordinates}
+                   options={{ icon: iconURL}}
+                   position={{lat: vodostaj.lat, lng: vodostaj.lng}}
+                   onClick={(event) => this.vodostajClick(vodostaj._id)}
+                    />);
+                /*<Polyline
                     key={vodostaj._id}
                     vodostajObj={vodostaj}
                     path={pathCoordinates}
                     options={vodostajOptions}
                     onClick={(event) => this.vodostajClick(vodostaj._id)}
-                    />);*/
-                <Polyline
-                    key={vodostaj._id}
-                    vodostajObj={vodostaj}
-                    path={pathCoordinates}
-                    options={vodostajOptions}
-                    onClick={(event) => this.vodostajClick(vodostaj._id)}
-                />);
+                />);*/
             }
             console.log(this.vodostaji);
             
             this.forceUpdate();
         }
     );
-
-   
   }
 
   crtajCijevi(){
     PipeApi.GetPipes().subscribe(
         vals => {
-           // console.log(vals);
+           console.log(vals);
             this.pipes = [];
             for ( let pipe of vals ) {
                 var pipeOptions = null;
@@ -336,30 +343,37 @@ class Dashboard extends Component {
   }
 
   dodavanje(i){
-     // var id = this.selectedVodostaj.props.vodostajObj._id;
-      var value = document.getElementById("vodostajValue").value;
+      var id = this.selectedVodostaj.props.vodostajObj._id;
+      var name = this.selectedVodostaj.props.vodostajObj.name;
+      var value = document.getElementById("novaVodostajValue").value;
       var created_by = this.selectedVodostaj.props.vodostajObj.created_by;
+      var deleted = this.selectedVodostaj.props.vodostajObj.deleted;
       var lat = this.selectedVodostaj.props.vodostajObj.lat;
       var lng = this.selectedVodostaj.props.vodostajObj.lng;
-     // console.log(JSON.stringify (this.selectedVodostaj) +" kak "+ id +" kaaako");
     var ajax = new XMLHttpRequest();
      ajax.onreadystatechange = function() {// Anonimna funkcija
-           if (ajax.readyState == 4 && ajax.status == 200)
-               console.log("Uspjesno dodavanje vodostaja");
+           if (ajax.readyState == 4 && ajax.status == 200){
+               console.log("Uspjesno azuriranje vodostaja");
+               alert("Uspjesno azuriranje vodostaja");
+              
+           }
                
            else if (ajax.readyState == 4)
            console.log(ajax.status,ajax.responseText);
         };
-       ajax.open("POST","http://localhost:8080/api/vodostaji",true);
+       ajax.open("PUT","http://localhost:8080/api/vodostaji/" +id,true);
        ajax.setRequestHeader("Content-Type", "application/json");
        ajax.send(JSON.stringify({
+          name, 
           value,
           created_by,
+          deleted,
           lat,
           lng
        })
 
        );
+
   }
   
 
@@ -411,12 +425,15 @@ class Dashboard extends Component {
 
               <Card>
                   <CardHeader>
-                      Vodostaj - {this.selectedVodostaj.props.vodostajObj._id}
+                      Vodostaj - {this.selectedVodostaj.props.vodostajObj.name} <br/>
+                      Sifra vodostaja - {this.selectedVodostaj.props.vodostajObj._id}
                   </CardHeader>
                   <CardBody>
                       <FormGroup>
-                          <Label htmlFor="vodostajVisina">Visina vodostaja</Label>
-                          <Input type="number" id="vodostajValue" />
+                          <Label htmlFor="vodostajVisina">Trenutna visina vodostaja</Label>
+                          <Input type="number" id="vodostajValue" value={this.selectedVodostaj.props.vodostajObj.value} />
+                          <Label htmlFor="novaVodostajVisina">Nova visina vodostaja</Label>
+                          <Input type="number" id="novaVodostajValue" />
                       </FormGroup>
 
 
@@ -439,7 +456,7 @@ class Dashboard extends Component {
 
                       <FormGroup id="buttoni" row className="my-0">
                       <Col xs ="4">
-                          <Button onClick={this.dodavanje}>Dodaj podatke o vodostaju</Button>
+                          <Button onClick={this.dodavanje}>Azuriraj podatke o vodostaju</Button>
                       </Col>
                   </FormGroup>
                   </CardBody>
