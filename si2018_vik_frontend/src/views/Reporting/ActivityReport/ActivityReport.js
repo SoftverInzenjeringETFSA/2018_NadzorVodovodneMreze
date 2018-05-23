@@ -18,12 +18,21 @@ import type {ActivityReportEntry} from "../../../api/model/ActivityReportEntry";
 
 
 class ActivityReport extends Component {
-    items: ActivityReportEntry = [];
+    items: ActivityReportEntry[] = [];
     itemsPerPage = 5;
+    currentPage = 1;
+    total = 0;
 
     fetchList() {
-        ReportApi.GenerateActivityReport(1, this.itemsPerPage, null).subscribe( items => {
-            this.items = items;
+        ReportApi.GenerateActivityReport(this.currentPage, this.itemsPerPage, null).subscribe( items => {
+            this.total = items.total;
+            this.items = items.data;
+            if ( this.items.length === 0 && this.currentPage > 1 ) {
+                this.currentPage --;
+                this.fetchList();
+                return;
+            }
+
             this.forceUpdate();
         } );
     }
@@ -44,15 +53,48 @@ class ActivityReport extends Component {
         this.fetchList();
     }
 
+    setPage(n) {
+        this.currentPage = n;
+        this.fetchList();
+    }
+
+    makePagination() {
+        var pagination = [];
+
+        for ( var i = Math.max(-2 + this.currentPage, 1); i <= Math.min(Math.ceil(this.total / this.itemsPerPage), Math.max(-2 + this.currentPage, 1) + 5); ++ i ) {
+            var paginator = function(instance, i) {
+                return function() {
+                    instance.setPage(i);
+                }
+            };
+
+            pagination.push(
+                <PaginationItem key={i}>
+                    <PaginationLink onClick={paginator(this, i)} tag="button">{i}</PaginationLink>
+                </PaginationItem>
+            );
+
+            if ( i === this.currentPage ) {
+                pagination[pagination.length - 1] = <PaginationItem active key={i}>
+                    <PaginationLink tag="button">{i}</PaginationLink>
+                </PaginationItem>
+            }
+        }
+
+        return <Pagination>
+            {pagination}
+        </Pagination>;
+    }
+
     render() {
         const items: ActivityReportEntry[] = [];
-        let k = 1;
+        let k = (this.itemsPerPage * (this.currentPage - 1)) + 1;
         for ( const i of this.items ) {
             items.push(<tr key={k}>
                 <td>{k}</td>
                 <td>{ReportApi.LocalizedActivityLabel(i.activity)}</td>
                 <td>{i.user_id}</td>
-                <td>{i.timestamp}</td>
+                <td>{new Date(i.timestamp).toLocaleString()}</td>
             </tr>);
             ++k;
         }
@@ -61,25 +103,27 @@ class ActivityReport extends Component {
                 <Col>
                     <Card>
                         <CardHeader>
-                            <i className="fa fa-align-justify"></i> Combined All Table
+                            <i className="fa fa-align-justify"></i> Izvještaj današnjih aktivnosti
                         </CardHeader>
                         <CardBody>
                             <div className="pr-2 pt-2 pb-2">
                                 <span className="pr-2 pt-2 pb-2">
-                                    Broj unosa po stranici:
+                                    Ukupno {this.total} unosa, broj prikazanih unosa po stranici:
                                 </span>
                                 <ButtonDropdown className="mr-1" isOpen={this.state.itemsPerPageDropdownOpen} toggle={() => { this.setState( { itemsPerPageDropdownOpen: !this.state.itemsPerPageDropdownOpen }); } }>
                                     <DropdownToggle caret color="secondary">
-                                        {this.itemsPerPage}
+                                        {this.itemsPerPage === -1 ? 'Svi unosi' : this.itemsPerPage}
                                     </DropdownToggle>
                                     <DropdownMenu>
                                         <DropdownItem onClick={() => this.setItemsPerPage(5)}>5</DropdownItem>
                                         <DropdownItem onClick={() => this.setItemsPerPage(10)}>10</DropdownItem>
                                         <DropdownItem onClick={() => this.setItemsPerPage(15)}>15</DropdownItem>
                                         <DropdownItem onClick={() => this.setItemsPerPage(20)}>20</DropdownItem>
+                                        <DropdownItem onClick={() => this.setItemsPerPage(-1)}>Svi unosi</DropdownItem>
                                     </DropdownMenu>
                                 </ButtonDropdown>
                                 <Button onClick={() => this.fetchList()}>Osvježi</Button>
+                                <Button onClick={() => window.print()}>Printaj trenutni pogled</Button>
                             </div>
 
                             <Table hover bordered striped responsive size="sm">
@@ -98,16 +142,7 @@ class ActivityReport extends Component {
                                 </tbody>
                             </Table>
                             <nav>
-                                <Pagination>
-                                    <PaginationItem><PaginationLink previous tag="button">Prev</PaginationLink></PaginationItem>
-                                    <PaginationItem active>
-                                        <PaginationLink tag="button">1</PaginationLink>
-                                    </PaginationItem>
-                                    <PaginationItem><PaginationLink tag="button">2</PaginationLink></PaginationItem>
-                                    <PaginationItem><PaginationLink tag="button">3</PaginationLink></PaginationItem>
-                                    <PaginationItem><PaginationLink tag="button">4</PaginationLink></PaginationItem>
-                                    <PaginationItem><PaginationLink next tag="button">Next</PaginationLink></PaginationItem>
-                                </Pagination>
+                                {this.makePagination()}
                             </nav>
                         </CardBody>
                     </Card>

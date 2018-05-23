@@ -24,7 +24,11 @@ module.exports = {
         LogFailureRemove: function(userId) {logEvent(userId, 'failure_remove');},
 
         GenerateReport: function(filter, page, perPage) {
-            return LoggingEvent.find().skip(parseInt(page * perPage)).limit(parseInt(perPage));
+            var res = LoggingEvent.find();
+            if ( perPage > 0 ) {
+                return res.skip((page - 1) * perPage).limit(parseInt(perPage));
+            }
+            return res;
         },
         ReportCount: function(filter) {
             return LoggingEvent.count();
