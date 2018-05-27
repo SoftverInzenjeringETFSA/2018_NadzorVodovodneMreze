@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Badge, Card, CardBody, CardHeader, Col, Pagination, PaginationItem, PaginationLink, Row, Table } from 'reactstrap';
 import VodostajApi from "../../../api/VodostajApi";
-
+import moment from 'moment';
 
 class VodostajiList extends Component {
     constructor(props){
@@ -38,7 +38,7 @@ class VodostajiList extends Component {
                                     {this.state.vals.map((item)=><tr>
                                         <td>{item._id}</td>
                                         <td>{item.value}</td>
-                                        <td>{item.createdAt}</td>
+                                        <td>{moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY')}</td>
                                         <td>{item.lat}</td>
                                         <td>{item.lng}</td>
                                     </tr>)}
