@@ -12,6 +12,7 @@ class ApiRoutes {
     static REPORT_ACTIVITY = API_ROOT + '/report';
     static VODOSTAJI = API_ROOT + '/vodostaji';
     static SECTION = API_ROOT + '/section';
+    static LOGIN = API_ROOT + '/login';
 }
 
 

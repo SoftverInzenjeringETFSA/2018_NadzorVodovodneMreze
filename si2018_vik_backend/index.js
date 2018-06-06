@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const routes = require('./api/routes');
 const addVodostaji = require('./api/vodostaji');
+const Login = require('./api/login');
 
 
 mongoose.connect('mongodb+srv://si2018user:si2018pass@cluster0-aqpgk.mongodb.net/test?retryWrites=true')
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use('/api', apiRoutes);
 app.use('/api', addVodostaji);
+app.use('/api', Login);
 
 app.use('/', apiRoutes);
 
@@ -27,6 +29,6 @@ app.use(function(err,req,res,next){
 app.get("/", function(req, res) {
     res.send("API endpoint works.");
 });
-
+console.log("Listening on port 8080");
 app.listen(process.env.PORT || 8080);
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, Link } from 'react-router-dom';
 import { Container } from 'reactstrap';
 
 import {
@@ -48,7 +48,6 @@ class Full extends Component {
                       : (null);
                   },
                 )}
-                <Redirect from="/" to="/dashboard" />
               </Switch>
             </Container>
           </main>

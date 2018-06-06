@@ -6,6 +6,11 @@ export default {
       icon: 'icon-speedometer',
     },
     {
+        name: 'Login',
+        url: '/login',
+        icon: 'icon-speedometer',
+      },
+    {
       title: true,
       name: 'Sistem',
       wrapper: {            // optional wrapper object

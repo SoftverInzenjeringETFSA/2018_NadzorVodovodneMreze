@@ -38,6 +38,7 @@ import PipesList from "./views/Pipes/PipesList/PipesList";
 import ActivityReport from "./views/Reporting/ActivityReport/ActivityReport";
 import Vodostaji from './views/Vodostaji/Vodostaji';
 import VodostajiList from './views/Vodostaji/VodostajiList/VodostajiList';
+import Login from './views/Pages/Login/Login';
 
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
@@ -66,6 +67,7 @@ const routes = [
   { path: '/administration/settings', exact: true, name: 'Home', component: Dashboard },
 
   { path: '/', exact: true, name: 'Home', component: Full },
+  { path: '/login', exact: true, name: 'Login', component: Login },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
 
 
