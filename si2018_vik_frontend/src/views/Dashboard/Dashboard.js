@@ -62,23 +62,25 @@ const MainMapComponent = withScriptjs(withGoogleMap((props) =>
     </GoogleMap>
 ));
 
+
+var isUpdateVodostajEnabled = false;
+var errors = false;  
+
 class Dashboard extends Component {
-  selectedPipe = null;
-  selectedVodostaj = null;
-  selectedSection = null;
+    selectedPipe = null;
+    selectedVodostaj = null;
+    selectedSection = null;
 
-  pipeClick(pipe) {
-    
-      this.selectedPipe = this.pipes[this.pipes.findIndex((val, i) => {  return val.key === pipe; })];
-
-      this.forceUpdate();
-  }
-  vodostajClick(vodostaj) {
-      console.log(vodostaj);
-    this.selectedVodostaj = this.vodostaji[this.vodostaji.findIndex((val, i) => { return val.key === vodostaj; })];
-    console.log(this.selectedVodostaj);
-    this.forceUpdate();
-}
+    pipeClick(pipe) {
+        this.selectedPipe = this.pipes[this.pipes.findIndex((val, i) => {  return val.key === pipe; })];
+        this.forceUpdate();
+    }
+    vodostajClick(vodostaj) {
+        console.log(vodostaj);
+        this.selectedVodostaj = this.vodostaji[this.vodostaji.findIndex((val, i) => { return val.key === vodostaj; })];
+        console.log(this.selectedVodostaj);
+        this.forceUpdate();
+    }
   sectionClick(section) {
     console.log("TUU");
     this.selectedSection = this.krugovi[this.krugovi.findIndex((val, i) => {  return val.key === section; })];
@@ -342,37 +344,61 @@ class Dashboard extends Component {
       );
   }
 
-  dodavanje(i){
-      var id = this.selectedVodostaj.props.vodostajObj._id;
-      var name = this.selectedVodostaj.props.vodostajObj.name;
-      var value = document.getElementById("novaVodostajValue").value;
-      var created_by = this.selectedVodostaj.props.vodostajObj.created_by;
-      var deleted = this.selectedVodostaj.props.vodostajObj.deleted;
-      var lat = this.selectedVodostaj.props.vodostajObj.lat;
-      var lng = this.selectedVodostaj.props.vodostajObj.lng;
-    var ajax = new XMLHttpRequest();
-     ajax.onreadystatechange = function() {// Anonimna funkcija
-           if (ajax.readyState == 4 && ajax.status == 200){
-               console.log("Uspjesno azuriranje vodostaja");
-               alert("Uspjesno azuriranje vodostaja");
-              
-           }
-               
-           else if (ajax.readyState == 4)
-           console.log(ajax.status,ajax.responseText);
-        };
-       ajax.open("PUT","http://localhost:8080/api/vodostaji/" +id,true);
-       ajax.setRequestHeader("Content-Type", "application/json");
-       ajax.send(JSON.stringify({
-          name, 
-          value,
-          created_by,
-          deleted,
-          lat,
-          lng
-       })
+  validate(vodostaj) {
+      return {
+        noviVodostaj: (vodostaj > -1 && vodostaj < 100)
+      };
+  }
 
-       );
+  handleVodostajChange(evt) {
+
+    console.log(evt.target);
+    errors = this.validate(evt.target.value);
+    isUpdateVodostajEnabled = !this.errors.vodostaj;
+    
+    this.setState({
+        noviVodostaj: evt.target.value
+    });
+    
+  }
+
+  dodavanje(i){
+    var id = this.selectedVodostaj.props.vodostajObj._id;
+    var name = this.selectedVodostaj.props.vodostajObj.name;
+    // var value = this.state.noviVodostaj;
+    var value = document.getElementById("novaVodostajValue").value;
+    var created_by = this.selectedVodostaj.props.vodostajObj.created_by;
+    var deleted = this.selectedVodostaj.props.vodostajObj.deleted;
+    var lat = this.selectedVodostaj.props.vodostajObj.lat;
+    var lng = this.selectedVodostaj.props.vodostajObj.lng;
+
+    var ajax = new XMLHttpRequest();
+    let that = this;
+
+    //this.forceUpdate();
+
+    ajax.onreadystatechange = function() {
+        if (ajax.readyState == 4 && ajax.status == 200){
+            alert("Uspjesno azuriranje vodostaja");
+            that.forceUpdate();
+            document.getElementById("novaVodostajValue").value = '';
+            document.getElementById("vodostajValue").value = value;
+        }
+            
+        else if (ajax.readyState == 4) {
+            console.log(ajax.status,ajax.responseText);
+        }
+    };
+    ajax.open("PUT","http://localhost:8080/api/vodostaji/" +id,true);
+    ajax.setRequestHeader("Content-Type", "application/json");
+    ajax.send(JSON.stringify({
+        name, 
+        value,
+        created_by,
+        deleted,
+        lat,
+        lng
+    }));
 
   }
   
@@ -431,9 +457,13 @@ class Dashboard extends Component {
                   <CardBody>
                       <FormGroup>
                           <Label htmlFor="vodostajVisina">Trenutna visina vodostaja</Label>
-                          <Input type="number" id="vodostajValue" value={this.selectedVodostaj.props.vodostajObj.value} />
-                          <Label htmlFor="novaVodostajVisina">Nova visina vodostaja</Label>
-                          <Input type="number" id="novaVodostajValue" />
+                          <Input type="number" id="vodostajValue" value={this.selectedVodostaj.props.vodostajObj.value} readOnly/>
+                          <Label htmlFor="novaVodostajValue">Nova visina vodostaja</Label>
+                          <Input type="number" 
+                            id="novaVodostajValue" 
+                            // className={errors.vodostaj ? "error" : ""}
+                            // onChange={this.handleVodostajChange}
+                            value={null}/>
                       </FormGroup>
 
 
@@ -456,7 +486,9 @@ class Dashboard extends Component {
 
                       <FormGroup id="buttoni" row className="my-0">
                       <Col xs ="4">
-                          <Button onClick={this.dodavanje}>Azuriraj podatke o vodostaju</Button>
+                          <Button onClick={this.dodavanje} 
+                          //disabled={!this.isUpdateVodostajEnabled}
+                          >Azuriraj podatke o vodostaju</Button>
                       </Col>
                   </FormGroup>
                   </CardBody>
