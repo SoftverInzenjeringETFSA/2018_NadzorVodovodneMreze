@@ -376,19 +376,23 @@ class Dashboard extends Component {
     let that = this;
 
     //this.forceUpdate();
-
+    if(value >= 0 && value <= 100)
     ajax.onreadystatechange = function() {
         if (ajax.readyState == 4 && ajax.status == 200){
             alert("Uspjesno azuriranje vodostaja");
             that.forceUpdate();
             document.getElementById("novaVodostajValue").value = '';
             document.getElementById("vodostajValue").value = value;
-        }
             
+        }
+        
         else if (ajax.readyState == 4) {
             console.log(ajax.status,ajax.responseText);
         }
     };
+    else if (value < 0) 
+        alert("Vrijednost vodostaja mora biti pozitivan broj!");
+    else alert("Vrijednost vodostaja ne smije prelaziti vrijednost 100!");
     ajax.open("PUT","http://localhost:8080/api/vodostaji/" +id,true);
     ajax.setRequestHeader("Content-Type", "application/json");
     ajax.send(JSON.stringify({
