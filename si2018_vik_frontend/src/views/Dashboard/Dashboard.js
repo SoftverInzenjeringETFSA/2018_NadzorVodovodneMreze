@@ -321,6 +321,10 @@ class Dashboard extends Component {
     });
   }
   oznaciRad(e){
+      if (this.selectedPipe.props.pipeObj.status=="good") {
+          alert ("Označeni radovi na cijevi i cijev isključena iz vodovodne mreže.");
+      }
+      else alert ("Označen završetak radova na cijevi i cijev ponovo uključena na vodovodnu mrežu.");
     PipeApi.PatchPipeById(this.selectedPipe.props.pipeObj._id,this.selectedPipe.props.pipeObj.status).subscribe(
 
         vals => {
